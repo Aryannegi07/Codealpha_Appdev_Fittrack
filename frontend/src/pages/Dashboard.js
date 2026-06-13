@@ -172,8 +172,32 @@ const Dashboard = () => {
       {display && (
         <>
           <div className="card">
-            <div className="card-title">
-              Selected Day: {selectedDate || "Today"}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <div>
+                <div
+                  style={{
+                    fontSize: "13px",
+                    color: "#718096",
+                  }}
+                >
+                  Viewing Activity
+                </div>
+
+                <div
+                  style={{
+                    fontSize: "20px",
+                    fontWeight: "700",
+                  }}
+                >
+                  📅 {selectedDate || "Today"}
+                </div>
+              </div>
             </div>
           </div>
 
@@ -259,64 +283,116 @@ const Dashboard = () => {
       )}
 
       <div className="card" style={{ marginTop: "1.25rem" }}>
-        <div className="card-title">My Goals</div>
+        <div className="card-title">🎯 My Daily Goals</div>
 
-        <div style={{ marginBottom: "12px" }}>
-          <label>Steps Goal</label>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+            gap: "1rem",
+            marginTop: "1rem",
+          }}
+        >
+          <div className="metric">
+            <div className="metric-label">👟 Steps Goal</div>
 
-          <input
-            type="number"
-            className="form-input"
-            value={goals.dailyStepGoal}
-            onChange={(e) =>
-              setGoals({
-                ...goals,
-                dailyStepGoal: Number(e.target.value),
-              })
-            }
-          />
+            <input
+              type="number"
+              value={goals.dailyStepGoal}
+              onChange={(e) =>
+                setGoals({
+                  ...goals,
+                  dailyStepGoal: Number(e.target.value),
+                })
+              }
+              style={{
+                width: "100%",
+                padding: "10px",
+                borderRadius: "8px",
+                border: "1px solid #E2E8F0",
+                marginTop: "10px",
+              }}
+            />
+          </div>
+
+          <div className="metric">
+            <div className="metric-label">🔥 Calories Goal</div>
+
+            <input
+              type="number"
+              value={goals.dailyCalorieGoal}
+              onChange={(e) =>
+                setGoals({
+                  ...goals,
+                  dailyCalorieGoal: Number(e.target.value),
+                })
+              }
+              style={{
+                width: "100%",
+                padding: "10px",
+                borderRadius: "8px",
+                border: "1px solid #E2E8F0",
+                marginTop: "10px",
+              }}
+            />
+          </div>
+
+          <div className="metric">
+            <div className="metric-label">⏱ Active Minutes Goal</div>
+
+            <input
+              type="number"
+              value={goals.dailyActiveMinutesGoal}
+              onChange={(e) =>
+                setGoals({
+                  ...goals,
+                  dailyActiveMinutesGoal: Number(e.target.value),
+                })
+              }
+              style={{
+                width: "100%",
+                padding: "10px",
+                borderRadius: "8px",
+                border: "1px solid #E2E8F0",
+                marginTop: "10px",
+              }}
+            />
+          </div>
         </div>
 
-        <div style={{ marginBottom: "12px" }}>
-          <label>Calories Goal</label>
-
-          <input
-            type="number"
-            className="form-input"
-            value={goals.dailyCalorieGoal}
-            onChange={(e) =>
-              setGoals({
-                ...goals,
-                dailyCalorieGoal: Number(e.target.value),
-              })
-            }
-          />
-        </div>
-
-        <div style={{ marginBottom: "12px" }}>
-          <label>Active Minutes Goal</label>
-
-          <input
-            type="number"
-            className="form-input"
-            value={goals.dailyActiveMinutesGoal}
-            onChange={(e) =>
-              setGoals({
-                ...goals,
-                dailyActiveMinutesGoal: Number(e.target.value),
-              })
-            }
-          />
-        </div>
-
-        <button className="btn-primary" onClick={saveGoals}>
+        <button
+          onClick={saveGoals}
+          style={{
+            marginTop: "20px",
+            width: "100%",
+            background: "#378ADD",
+            color: "white",
+            border: "none",
+            borderRadius: "10px",
+            padding: "12px",
+            fontWeight: "600",
+            cursor: "pointer",
+          }}
+        >
           Save Goals
         </button>
       </div>
 
       {weekly.length > 0 && (
         <div className="card" style={{ marginTop: "1.25rem" }}>
-          <div className="card-title">Weekly Steps (Click Any Day)</div>
+          <div className="card-title">
+  📊 Weekly Activity
+</div>
+
+<div
+  style={{
+    fontSize: "13px",
+    color: "#718096",
+    marginBottom: "10px",
+  }}
+>
+  Click any bar to view that day's statistics
+</div>
 
           <div style={{ height: 180 }}>
             <Bar data={chartData} options={chartOptions} />
