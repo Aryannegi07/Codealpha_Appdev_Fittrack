@@ -10,7 +10,6 @@ const Layout = ({ children }) => {
     logout();
     navigate('/login');
   };
-
   return (
     <div className="app-layout">
       <nav className="sidebar">
