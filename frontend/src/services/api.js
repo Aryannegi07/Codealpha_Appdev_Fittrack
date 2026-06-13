@@ -1,6 +1,7 @@
 import axios from 'axios';
-
-const API = axios.create({ baseURL: '/api' });
+const API = axios.create({
+  baseURL: 'https://codealpha-appdev-fittrack.onrender.com/api'
+});
 
 // Attach JWT to every request
 API.interceptors.request.use((config) => {
