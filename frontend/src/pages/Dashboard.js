@@ -3,8 +3,12 @@ import {
   getDailySummary,
   getWeeklySummary,
   getTodayActivities,
+  getGoals,
+  updateGoals,
 } from "../services/api";
+
 import { Bar } from "react-chartjs-2";
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -16,6 +20,7 @@ import {
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip);
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
 const ICONS = {
   RUNNING: "🏃",
   WALKING: "🚶",
@@ -32,38 +37,94 @@ const Dashboard = () => {
   const [weekly, setWeekly] = useState([]);
   const [today, setToday] = useState([]);
 
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedSummary, setSelectedSummary] = useState(null);
+
+  const [goals, setGoals] = useState({
+    dailyStepGoal: 10000,
+    dailyCalorieGoal: 500,
+    dailyActiveMinutesGoal: 60,
+  });
+
   useEffect(() => {
-    getDailySummary()
-      .then((r) => setSummary(r.data))
-      .catch(() => {});
-    getWeeklySummary()
-      .then((r) => setWeekly(r.data))
-      .catch(() => {});
-    getTodayActivities()
-      .then((r) => setToday(r.data))
-      .catch(() => {});
+    loadDashboard();
   }, []);
+
+  const loadDashboard = async () => {
+    try {
+      const daily = await getDailySummary();
+      setSummary(daily.data);
+      setSelectedSummary(daily.data);
+
+      const weeklyRes = await getWeeklySummary();
+      setWeekly(weeklyRes.data);
+
+      const todayRes = await getTodayActivities();
+      setToday(todayRes.data);
+
+      const goalsRes = await getGoals();
+      setGoals(goalsRes.data);
+
+      const todayDate = new Date().toISOString().split("T")[0];
+      setSelectedDate(todayDate);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const loadSelectedDay = async (date) => {
+    try {
+      const res = await getDailySummary(date);
+
+      setSelectedDate(date);
+      setSelectedSummary(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const saveGoals = async () => {
+    try {
+      await updateGoals(goals);
+
+      const daily = await getDailySummary();
+
+      setSummary(daily.data);
+      setSelectedSummary(daily.data);
+
+      alert("Goals updated successfully");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to update goals");
+    }
+  };
 
   const pct = (val, goal) => {
     const v = val || 0;
     const g = goal || 1;
+
     return Math.min(100, Math.round((v / g) * 100));
   };
+
+  const display = selectedSummary || summary;
 
   const chartData = {
     labels: weekly.map(
       (d) =>
         DAYS[
           new Date(d.date).getDay() === 0 ? 6 : new Date(d.date).getDay() - 1
-        ] || "",
+        ],
     ),
+
     datasets: [
       {
         data: weekly.map((d) => d.totalSteps),
-        backgroundColor: weekly.map((_, i) =>
-          i === weekly.length - 1 ? "#378ADD" : "#B5D4F4",
+
+        backgroundColor: weekly.map((d) =>
+          d.date === selectedDate ? "#378ADD" : "#B5D4F4",
         ),
-        borderRadius: 4,
+
+        borderRadius: 6,
       },
     ],
   };
@@ -71,15 +132,35 @@ const Dashboard = () => {
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
-    plugins: { legend: { display: false } },
+
+    onClick: (_, elements) => {
+      if (!elements.length) return;
+
+      const index = elements[0].index;
+      const clickedDay = weekly[index];
+
+      if (clickedDay?.date) {
+        loadSelectedDay(clickedDay.date);
+      }
+    },
+
+    plugins: {
+      legend: {
+        display: false,
+      },
+    },
+
     scales: {
       x: {
-        grid: { display: false },
-        ticks: { font: { size: 11 }, color: "#718096" },
+        grid: {
+          display: false,
+        },
       },
+
       y: {
-        grid: { color: "#EDF2F7" },
-        ticks: { font: { size: 11 }, color: "#718096" },
+        grid: {
+          color: "#EDF2F7",
+        },
       },
     },
   };
@@ -88,65 +169,88 @@ const Dashboard = () => {
     <div>
       <div className="page-title">Dashboard</div>
 
-      {summary && (
+      {display && (
         <>
+          <div className="card">
+            <div className="card-title">
+              Selected Day: {selectedDate || "Today"}
+            </div>
+          </div>
+
           <div className="metric-grid">
             <div className="metric">
               <div className="metric-label">👟 Steps</div>
+
               <div className="metric-value">
-                {(summary.totalSteps || 0).toLocaleString()}
+                {(display.totalSteps || 0).toLocaleString()}
               </div>
+
               <div className="metric-unit">
-                / {(summary.stepGoal || 10000).toLocaleString()} goal
+                / {(display.stepGoal || 10000).toLocaleString()} goal
               </div>
             </div>
+
             <div className="metric">
               <div className="metric-label">🔥 Calories</div>
-              <div className="metric-value">{summary.totalCalories || 0}</div>
+
+              <div className="metric-value">{display.totalCalories || 0}</div>
+
               <div className="metric-unit">kcal burned</div>
             </div>
+
             <div className="metric">
               <div className="metric-label">⏱ Active</div>
-              <div className="metric-value">{summary.totalMinutes || 0}</div>
+
+              <div className="metric-value">{display.totalMinutes || 0}</div>
+
               <div className="metric-unit">minutes</div>
             </div>
+
             <div className="metric">
               <div className="metric-label">💪 Workouts</div>
-              <div className="metric-value">{summary.totalWorkouts || 0}</div>
-              <div className="metric-unit">today</div>
+
+              <div className="metric-value">{display.totalWorkouts || 0}</div>
+
+              <div className="metric-unit">workouts</div>
             </div>
           </div>
 
           <div className="card" style={{ marginTop: "1.25rem" }}>
-            <div className="card-title">Daily goals</div>
+            <div className="card-title">Daily Goals Progress</div>
+
             {[
               {
                 label: "Steps",
-                val: summary.totalSteps,
-                goal: summary.stepGoal,
+                val: display.totalSteps,
+                goal: display.stepGoal,
                 color: "#378ADD",
               },
               {
                 label: "Calories",
-                val: summary.totalCalories,
-                goal: summary.calorieGoal,
+                val: display.totalCalories,
+                goal: display.calorieGoal,
                 color: "#1D9E75",
               },
               {
-                label: "Active min",
-                val: summary.totalMinutes,
-                goal: summary.minutesGoal,
+                label: "Active Min",
+                val: display.totalMinutes,
+                goal: display.minutesGoal,
                 color: "#EF9F27",
               },
             ].map(({ label, val, goal, color }) => (
               <div className="progress-row" key={label}>
                 <span className="progress-label">{label}</span>
+
                 <div className="progress-bg">
                   <div
                     className="progress-fill"
-                    style={{ width: pct(val, goal) + "%", background: color }}
+                    style={{
+                      width: pct(val, goal) + "%",
+                      background: color,
+                    }}
                   />
                 </div>
+
                 <span className="progress-pct">{pct(val, goal)}%</span>
               </div>
             ))}
@@ -154,9 +258,66 @@ const Dashboard = () => {
         </>
       )}
 
+      <div className="card" style={{ marginTop: "1.25rem" }}>
+        <div className="card-title">My Goals</div>
+
+        <div style={{ marginBottom: "12px" }}>
+          <label>Steps Goal</label>
+
+          <input
+            type="number"
+            className="form-input"
+            value={goals.dailyStepGoal}
+            onChange={(e) =>
+              setGoals({
+                ...goals,
+                dailyStepGoal: Number(e.target.value),
+              })
+            }
+          />
+        </div>
+
+        <div style={{ marginBottom: "12px" }}>
+          <label>Calories Goal</label>
+
+          <input
+            type="number"
+            className="form-input"
+            value={goals.dailyCalorieGoal}
+            onChange={(e) =>
+              setGoals({
+                ...goals,
+                dailyCalorieGoal: Number(e.target.value),
+              })
+            }
+          />
+        </div>
+
+        <div style={{ marginBottom: "12px" }}>
+          <label>Active Minutes Goal</label>
+
+          <input
+            type="number"
+            className="form-input"
+            value={goals.dailyActiveMinutesGoal}
+            onChange={(e) =>
+              setGoals({
+                ...goals,
+                dailyActiveMinutesGoal: Number(e.target.value),
+              })
+            }
+          />
+        </div>
+
+        <button className="btn-primary" onClick={saveGoals}>
+          Save Goals
+        </button>
+      </div>
+
       {weekly.length > 0 && (
         <div className="card" style={{ marginTop: "1.25rem" }}>
-          <div className="card-title">Weekly steps</div>
+          <div className="card-title">Weekly Steps (Click Any Day)</div>
+
           <div style={{ height: 180 }}>
             <Bar data={chartData} options={chartOptions} />
           </div>
@@ -164,9 +325,15 @@ const Dashboard = () => {
       )}
 
       <div className="card" style={{ marginTop: "1.25rem" }}>
-        <div className="card-title">Today's activities</div>
+        <div className="card-title">Today's Activities</div>
+
         {today.length === 0 ? (
-          <div style={{ color: "#718096", fontSize: 14 }}>
+          <div
+            style={{
+              color: "#718096",
+              fontSize: 14,
+            }}
+          >
             No activities logged today. Go log one! 💪
           </div>
         ) : (
@@ -175,10 +342,12 @@ const Dashboard = () => {
               <div className="activity-icon">
                 {ICONS[a.exerciseType] || "⚡"}
               </div>
+
               <div className="activity-info">
                 <div className="activity-name">
                   {a.exerciseType.replace("_", " ")}
                 </div>
+
                 <div className="activity-meta">
                   {a.durationMinutes} min
                   {a.distanceKm ? ` · ${a.distanceKm} km` : ""}
@@ -186,6 +355,7 @@ const Dashboard = () => {
                   {a.intensity ? ` · ${a.intensity}` : ""}
                 </div>
               </div>
+
               {a.caloriesBurned > 0 && (
                 <div className="activity-cal">🔥 {a.caloriesBurned} kcal</div>
               )}

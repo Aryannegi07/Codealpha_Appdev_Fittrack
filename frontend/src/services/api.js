@@ -34,5 +34,6 @@ export const getTodayActivities = ()       => API.get('/activities/today');
 export const getDailySummary   = (date)   => API.get(`/activities/summary/daily${date ? `?date=${date}` : ''}`);
 export const getWeeklySummary  = ()       => API.get('/activities/summary/weekly');
 export const deleteActivity    = (id)     => API.delete(`/activities/${id}`);
-
+export const getGoals = () =>   API.get("/users/goals");
+export const updateGoals = (data) =>   API.put("/users/goals", data);
 export default API;
