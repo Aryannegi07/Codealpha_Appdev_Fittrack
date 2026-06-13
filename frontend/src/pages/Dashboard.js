@@ -380,19 +380,17 @@ const Dashboard = () => {
 
       {weekly.length > 0 && (
         <div className="card" style={{ marginTop: "1.25rem" }}>
-          <div className="card-title">
-  📊 Weekly Activity
-</div>
+          <div className="card-title">📊 Weekly Activity</div>
 
-<div
-  style={{
-    fontSize: "13px",
-    color: "#718096",
-    marginBottom: "10px",
-  }}
->
-  Click any bar to view that day's statistics
-</div>
+          <div
+            style={{
+              fontSize: "13px",
+              color: "#718096",
+              marginBottom: "10px",
+            }}
+          >
+            Click any bar to view that day's statistics
+          </div>
 
           <div style={{ height: 180 }}>
             <Bar data={chartData} options={chartOptions} />
