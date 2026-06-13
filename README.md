@@ -1,161 +1,278 @@
-# FitTrack – Fitness Tracker App
+# FitTrack – Fitness Tracker Application
 
-Full-stack fitness tracking app built with **Spring Boot + PostgreSQL** (backend)
-and **React** (frontend).
+FitTrack is a full-stack fitness tracking application that helps users log workouts, monitor daily activity, set personalized fitness goals, and visualize progress through interactive dashboards and charts.
+
+---
+
+## Live Deployment
+
+### Frontend
+https://codealpha-appdev-fittrack.vercel.app
+
+### Backend API
+https://codealpha-appdev-fittrack.onrender.com
+
+---
+
+## Features
+
+### Authentication
+
+- User Registration
+- User Login
+- JWT Authentication
+- Protected API Endpoints
+
+### Activity Tracking
+
+Users can log:
+
+- Running
+- Walking
+- Cycling
+- Swimming
+- Gym Workouts
+- Yoga
+- HIIT
+- Other Activities
+
+Each activity can include:
+
+- Duration
+- Calories Burned
+- Distance
+- Steps
+- Intensity Level
+- Notes
+- Activity Date
+
+---
+
+## Dashboard Analytics
+
+### Daily Summary
+
+Track:
+
+- Total Steps
+- Calories Burned
+- Active Minutes
+- Total Workouts
+
+### Weekly Activity Graph
+
+Interactive Chart.js dashboard:
+
+- Displays the last 7 days of activity
+- Click any day to view detailed statistics
+- Highlights the selected day
+- Updates dashboard metrics dynamically
+
+### Progress Tracking
+
+Visual progress bars for:
+
+- Steps Goal
+- Calories Goal
+- Active Minutes Goal
+
+---
+
+## Personalized Daily Goals
+
+Each user can configure custom goals:
+
+- Daily Step Goal
+- Daily Calorie Goal
+- Daily Active Minutes Goal
+
+Goals are:
+
+- Stored in PostgreSQL
+- User-specific
+- Persisted across sessions
+- Used in dashboard progress calculations
+
+---
+
+## Tech Stack
+
+### Frontend
+
+- React 18
+- React Router v6
+- Axios
+- Chart.js
+- React ChartJS 2
+
+### Backend
+
+- Spring Boot 3
+- Spring Security
+- JWT Authentication
+- Spring Data JPA
+- Hibernate
+
+### Database
+
+- PostgreSQL (Neon)
+
+### Deployment
+
+- Frontend: Vercel
+- Backend: Render
 
 ---
 
 ## Project Structure
 
-```
-fitness-tracker/
-├── backend/                  ← Spring Boot (Java 17)
+```text
+fitness_tracker/
+│
+├── backend/
 │   ├── pom.xml
 │   └── src/main/
-│       ├── java/com/fitness/tracker/
-│       │   ├── FitnessTrackerApplication.java
-│       │   ├── config/
-│       │   │   ├── SecurityConfig.java
-│       │   │   └── GlobalExceptionHandler.java
-│       │   ├── controller/
-│       │   │   ├── AuthController.java
-│       │   │   └── ActivityController.java
-│       │   ├── dto/
-│       │   │   ├── AuthDto.java
-│       │   │   └── ActivityDto.java
-│       │   ├── entity/
-│       │   │   ├── User.java
-│       │   │   └── Activity.java
-│       │   ├── repository/
-│       │   │   ├── UserRepository.java
-│       │   │   └── ActivityRepository.java
-│       │   ├── security/
-│       │   │   ├── JwtUtil.java
-│       │   │   ├── JwtAuthFilter.java
-│       │   │   └── CustomUserDetailsService.java
-│       │   └── service/
-│       │       ├── AuthService.java
-│       │       └── ActivityService.java
+│       ├── controller/
+│       ├── dto/
+│       ├── entity/
+│       ├── repository/
+│       ├── security/
+│       ├── service/
 │       └── resources/
-│           └── application.properties
 │
-├── frontend/                 ← React 18
+├── frontend/
 │   ├── package.json
 │   └── src/
-│       ├── App.js
-│       ├── index.js 
-│       ├── context/AuthContext.js
-│       ├── services/api.js
 │       ├── components/
-│       │   ├── Layout.js
-│       │   └── PrivateRoute.js
+│       ├── context/
 │       ├── pages/
-│       │   ├── Login.js
-│       │   ├── Register.js
-│       │   ├── Dashboard.js
-│       │   ├── LogActivity.js
-│       │   └── History.js
-│       └── styles/App.css
+│       ├── services/
+│       └── styles/
 │
-└── database/
-    ├── schema.sql            ← Create tables + indexes
-    └── seed.sql              ← Optional test data
+└── README.md
 ```
 
 ---
 
-## Setup
+## API Endpoints
 
-### 1. PostgreSQL
+### Authentication
+
+| Method | Endpoint |
+|----------|----------|
+| POST | `/api/auth/register` |
+| POST | `/api/auth/login` |
+
+---
+
+### Activities
+
+| Method | Endpoint |
+|----------|----------|
+| POST | `/api/activities` |
+| GET | `/api/activities` |
+| GET | `/api/activities/today` |
+| GET | `/api/activities/summary/daily?date=YYYY-MM-DD` |
+| GET | `/api/activities/summary/weekly` |
+| DELETE | `/api/activities/{id}` |
+
+---
+
+### User Goals
+
+| Method | Endpoint |
+|----------|----------|
+| GET | `/api/users/goals` |
+| PUT | `/api/users/goals` |
+
+---
+
+## Local Setup
+
+### 1. Clone Repository
 
 ```bash
-psql -U postgres
-```
-```sql
-CREATE DATABASE fitness_tracker;
-\q
-```
-```bash
-psql -U postgres -d fitness_tracker -f database/schema.sql
-# Optional seed:
-psql -U postgres -d fitness_tracker -f database/seed.sql
+git clone <repository-url>
+cd fitness_tracker
 ```
 
-### 2. Backend
+---
 
-Edit `backend/src/main/resources/application.properties`:
+### 2. Backend Setup
+
+Configure:
+
+```properties
+spring.datasource.url=
+spring.datasource.username=
+spring.datasource.password=
+
+app.jwt.secret=
 ```
-spring.datasource.url=jdbc:postgresql://localhost:5432/fitness_tracker
-spring.datasource.username=postgres
-spring.datasource.password=YOUR_PASSWORD
-app.jwt.secret=YourSuperSecretKeyThatIsAtLeast256BitsLong
-```
+
+Run:
 
 ```bash
 cd backend
+
 mvn clean install
+
 mvn spring-boot:run
 ```
-Backend starts on **http://localhost:8080**
 
-### 3. Frontend
+Backend runs at:
+
+```text
+http://localhost:8080
+```
+
+---
+
+### 3. Frontend Setup
 
 ```bash
 cd frontend
+
 npm install
+
 npm start
 ```
-Frontend starts on **http://localhost:3000**
+
+Frontend runs at:
+
+```text
+http://localhost:3000
+```
 
 ---
 
 ## Environment Variables
 
-Create a `.env` file in the project root using `.env.example`.
+Example backend configuration:
 
-Example:
+```properties
+spring.datasource.url=jdbc:postgresql://localhost:5432/fitness_tracker
+spring.datasource.username=postgres
+spring.datasource.password=your_password
 
-```env
-DB_URL=jdbc:postgresql://localhost:5432/fitness_tracker
-DB_USERNAME=postgres
-DB_PASSWORD=your_password
-JWT_SECRET=your_secret_key
-JWT_EXPIRATION=86400000
+app.jwt.secret=your_secret_key
 ```
 
-The `.env` file is ignored by Git and should never be committed.
+---
 
+## Future Enhancements
 
-## API Endpoints
-
-### Auth (public)
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/auth/register` | Register new user |
-| POST | `/api/auth/login` | Login, returns JWT |
-
-### Activities (requires `Authorization: Bearer <token>`)
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/activities` | Log new activity |
-| GET | `/api/activities` | All user activities |
-| GET | `/api/activities/today` | Today's activities |
-| GET | `/api/activities/summary/daily?date=YYYY-MM-DD` | Daily summary |
-| GET | `/api/activities/summary/weekly` | Last 7 days summary |
-| DELETE | `/api/activities/{id}` | Delete an activity |
+- Monthly Analytics
+- Fitness Streak Tracking
+- Achievement Badges
+- Exercise Recommendations
+- Dark Mode
+- Export Reports (PDF/CSV)
 
 ---
 
-## Test User (after running seed.sql)
-- Username: `testuser`
-- Password: `password123`
+## Author
 
----
+**Aryan Negi**
 
-## Tech Stack
-| Layer | Technology |
-|-------|-----------|
-| Backend | Spring Boot 3.2, Spring Security, JPA/Hibernate |
-| Auth | JWT (HMAC-SHA256), BCrypt |
-| Database | PostgreSQL 15+ |
-| Frontend | React 18, React Router v6, Axios, Chart.js |
+CodeAlpha App Development Internship Project
