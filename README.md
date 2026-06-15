@@ -13,6 +13,13 @@ https://codealpha-appdev-fittrack.vercel.app
 https://codealpha-appdev-fittrack.onrender.com
 
 ---
+## 📱 Android App
+
+<p align="center">
+  <a href="https://github.com/Aryannegi07/Codealpha_Appdev_FitTrack/releases/latest">
+    <img src="https://img.shields.io/badge/Download%20Latest-APK-success?style=for-the-badge&logo=android" />
+  </a>
+</p>
 
 ## Features
 
