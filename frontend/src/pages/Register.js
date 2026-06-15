@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { register as registerApi } from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import axios from "axios";
 
 const Register = () => {
   const [form, setForm] = useState({
@@ -13,18 +14,50 @@ const Register = () => {
     weightKg: "",
     heightCm: "",
   });
+
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
+  const testConnection = async () => {
+    try {
+      const res = await fetch(
+        "https://codealpha-appdev-fittrack.onrender.com/api/auth/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username: "test",
+            password: "test",
+          }),
+        },
+      );
+
+      const text = await res.text();
+
+      alert(
+        JSON.stringify({
+          status: res.status,
+          ok: res.ok,
+          body: text,
+        }),
+      );
+    } catch (e) {
+      alert("FETCH ERROR: " + e.message);
+    }
+  };
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
+
     try {
       const payload = {
         ...form,
@@ -32,23 +65,31 @@ const Register = () => {
         weightKg: form.weightKg ? parseFloat(form.weightKg) : undefined,
         heightCm: form.heightCm ? parseFloat(form.heightCm) : undefined,
       };
+
       const { data } = await registerApi(payload);
+
       login(data);
       navigate("/dashboard");
     } catch (err) {
       console.log("REGISTER ERROR:", err);
-      console.log("REGISTER RESPONSE:", err.response);
-      console.log("REGISTER DATA:", err.response?.data);
+      console.log("MESSAGE:", err.message);
+      console.log("STATUS:", err.response?.status);
+      console.log("DATA:", err.response?.data);
 
-      const msg =
-        err.response?.data?.message ||
+      alert(
+        JSON.stringify({
+          message: err.message,
+          status: err.response?.status,
+          data: err.response?.data,
+        }),
+      );
+
+      setError(
         err.response?.data?.error ||
-        (typeof err.response?.data === "string" ? err.response.data : null) ||
-        err.message ||
-        "Registration failed";
-
-      alert(msg);
-      setError(msg);
+          err.response?.data?.message ||
+          err.message ||
+          "Registration failed",
+      );
     } finally {
       setLoading(false);
     }
@@ -66,16 +107,37 @@ const Register = () => {
           }}
         >
           <span style={{ fontSize: 28 }}>🏃</span>
-          <span style={{ fontSize: 20, fontWeight: 600, color: "#378ADD" }}>
+
+          <span
+            style={{
+              fontSize: 20,
+              fontWeight: 600,
+              color: "#378ADD",
+            }}
+          >
             FitTrack
           </span>
         </div>
+
         <div className="auth-title">Create account</div>
+
         <div className="auth-sub">
           Start tracking your fitness journey today
         </div>
 
         {error && <div className="error-msg">{error}</div>}
+
+        <button
+          type="button"
+          onClick={testConnection}
+          className="btn btn-primary"
+          style={{
+            width: "100%",
+            marginBottom: "12px",
+          }}
+        >
+          Test Backend
+        </button>
 
         <form onSubmit={handleSubmit}>
           <div className="form-grid" style={{ marginBottom: 14 }}>
@@ -89,6 +151,7 @@ const Register = () => {
                 required
               />
             </div>
+
             <div className="form-group">
               <label>Full Name</label>
               <input
@@ -98,6 +161,7 @@ const Register = () => {
                 placeholder="John Doe"
               />
             </div>
+
             <div className="form-group full">
               <label>Email *</label>
               <input
@@ -109,6 +173,7 @@ const Register = () => {
                 required
               />
             </div>
+
             <div className="form-group full">
               <label>Password *</label>
               <input
@@ -121,6 +186,7 @@ const Register = () => {
                 minLength={6}
               />
             </div>
+
             <div className="form-group">
               <label>Age</label>
               <input
@@ -133,6 +199,7 @@ const Register = () => {
                 max={120}
               />
             </div>
+
             <div className="form-group">
               <label>Weight (kg)</label>
               <input
@@ -144,6 +211,7 @@ const Register = () => {
                 placeholder="70.0"
               />
             </div>
+
             <div className="form-group full">
               <label>Height (cm)</label>
               <input
@@ -156,13 +224,14 @@ const Register = () => {
               />
             </div>
           </div>
+
           <button
             className="btn btn-primary"
             type="submit"
             style={{ width: "100%" }}
             disabled={loading}
           >
-            {loading ? "Creating account…" : "Create account"}
+            {loading ? "Creating account..." : "Create account"}
           </button>
         </form>
 
