@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { register as registerApi } from "../services/api";
 import { useAuth } from "../context/AuthContext";
-import axios from "axios";
 
 const Register = () => {
   const [form, setForm] = useState({
@@ -24,35 +23,6 @@ const Register = () => {
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
-  const testConnection = async () => {
-    try {
-      const res = await fetch(
-        "https://codealpha-appdev-fittrack.onrender.com/api/auth/login",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            username: "test",
-            password: "test",
-          }),
-        },
-      );
-
-      const text = await res.text();
-
-      alert(
-        JSON.stringify({
-          status: res.status,
-          ok: res.ok,
-          body: text,
-        }),
-      );
-    } catch (e) {
-      alert("FETCH ERROR: " + e.message);
-    }
-  };
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -71,26 +41,12 @@ const Register = () => {
       login(data);
       navigate("/dashboard");
     } catch (err) {
-      console.log("REGISTER ERROR:", err);
-      console.log("MESSAGE:", err.message);
-      console.log("STATUS:", err.response?.status);
-      console.log("DATA:", err.response?.data);
-
-      alert(
-        JSON.stringify({
-          message: err.message,
-          status: err.response?.status,
-          data: err.response?.data,
-        }),
-      );
-
-      setError(
-        err.response?.data?.error ||
-          err.response?.data?.message ||
-          err.message ||
-          "Registration failed",
-      );
-    } finally {
+  setError(
+    err.response?.data?.error ||
+      err.response?.data?.message ||
+      "Registration failed"
+  );
+} finally {
       setLoading(false);
     }
   };
@@ -127,17 +83,6 @@ const Register = () => {
 
         {error && <div className="error-msg">{error}</div>}
 
-        <button
-          type="button"
-          onClick={testConnection}
-          className="btn btn-primary"
-          style={{
-            width: "100%",
-            marginBottom: "12px",
-          }}
-        >
-          Test Backend
-        </button>
 
         <form onSubmit={handleSubmit}>
           <div className="form-grid" style={{ marginBottom: 14 }}>
