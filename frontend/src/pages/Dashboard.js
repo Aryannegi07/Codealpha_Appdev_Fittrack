@@ -1,10 +1,15 @@
 import React, { useEffect, useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import { calculateAchievements } from "../utils/achievementUtils";
+import { calculateStreak } from "../utils/streakUtils";
+
 import {
   getDailySummary,
   getWeeklySummary,
   getTodayActivities,
   getGoals,
   updateGoals,
+  getAllActivities,
 } from "../services/api";
 
 import { Bar } from "react-chartjs-2";
@@ -46,6 +51,12 @@ const Dashboard = () => {
     dailyActiveMinutesGoal: 60,
   });
 
+  const { user } = useAuth();
+
+  const [activities, setActivities] = useState([]);
+  const [achievementCount, setAchievementCount] = useState(0);
+  const [currentStreak, setCurrentStreak] = useState(0);
+
   useEffect(() => {
     loadDashboard();
   }, []);
@@ -61,6 +72,15 @@ const Dashboard = () => {
 
       const todayRes = await getTodayActivities();
       setToday(todayRes.data);
+
+      const activitiesRes = await getAllActivities();
+      setActivities(activitiesRes.data);
+
+      const achievements = calculateAchievements(activitiesRes.data);
+
+      setAchievementCount(achievements.filter((a) => a.earned).length);
+
+      setCurrentStreak(calculateStreak(activitiesRes.data));
 
       const goalsRes = await getGoals();
       setGoals(goalsRes.data);
@@ -107,6 +127,16 @@ const Dashboard = () => {
   };
 
   const display = selectedSummary || summary;
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+
+    if (hour < 12) return "Morning";
+    if (hour < 17) return "Afternoon";
+    if (hour < 21) return "Evening";
+
+    return "Night";
+  };
 
   const chartData = {
     labels: weekly.map(
@@ -167,8 +197,34 @@ const Dashboard = () => {
 
   return (
     <div>
-      <div className="page-title">Dashboard</div>
+      <div className="card" style={{ marginBottom: "20px" }}>
+        <div
+          style={{
+            fontSize: "26px",
+            fontWeight: "700",
+            marginBottom: "8px",
+          }}
+        >
+          👋 Good {getGreeting()}, {user?.fullName?.split(" ")[0] || "User"}
+        </div>
 
+        <div
+          style={{
+            display: "flex",
+            gap: "20px",
+            flexWrap: "wrap",
+            color: "#718096",
+            fontWeight: "600",
+          }}
+        >
+          <div>🔥 {currentStreak} Day Streak</div>
+
+          <div>
+            🏆 {achievementCount} Achievement
+            {achievementCount !== 1 ? "s" : ""}
+          </div>
+        </div>
+      </div>
       {display && (
         <>
           <div className="card">
@@ -201,84 +257,51 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div className="metric-grid">
-            <div className="metric">
-              <div className="metric-label">👟 Steps</div>
-
-              <div className="metric-value">
-                {(display.totalSteps || 0).toLocaleString()}
+          <div className="goal-grid">
+            <div className="goal-card">
+              <div className="goal-circle">
+                {pct(display.totalSteps, display.stepGoal)}%
               </div>
 
-              <div className="metric-unit">
-                / {(display.stepGoal || 10000).toLocaleString()} goal
+              <div className="goal-icon">👟</div>
+
+              <div className="goal-title">Steps</div>
+
+              <div className="goal-value">
+                {(display.totalSteps || 0).toLocaleString()} /
+                {(display.stepGoal || 10000).toLocaleString()}
               </div>
             </div>
 
-            <div className="metric">
-              <div className="metric-label">🔥 Calories</div>
+            <div className="goal-card">
+              <div className="goal-circle">
+                {pct(display.totalCalories, display.calorieGoal)}%
+              </div>
 
-              <div className="metric-value">{display.totalCalories || 0}</div>
+              <div className="goal-icon">🔥</div>
 
-              <div className="metric-unit">kcal burned</div>
+              <div className="goal-title">Calories</div>
+
+              <div className="goal-value">
+                {display.totalCalories || 0} /{display.calorieGoal || 500}
+              </div>
             </div>
 
-            <div className="metric">
-              <div className="metric-label">⏱ Active</div>
+            <div className="goal-card">
+              <div className="goal-circle">
+                {pct(display.totalMinutes, display.minutesGoal)}%
+              </div>
 
-              <div className="metric-value">{display.totalMinutes || 0}</div>
+              <div className="goal-icon">⏱</div>
 
-              <div className="metric-unit">minutes</div>
-            </div>
+              <div className="goal-title">Active Time</div>
 
-            <div className="metric">
-              <div className="metric-label">💪 Workouts</div>
-
-              <div className="metric-value">{display.totalWorkouts || 0}</div>
-
-              <div className="metric-unit">workouts</div>
+              <div className="goal-value">
+                {display.totalMinutes || 0} /{display.minutesGoal || 60}
+              </div>
             </div>
           </div>
 
-          <div className="card" style={{ marginTop: "1.25rem" }}>
-            <div className="card-title">Daily Goals Progress</div>
-
-            {[
-              {
-                label: "Steps",
-                val: display.totalSteps,
-                goal: display.stepGoal,
-                color: "#378ADD",
-              },
-              {
-                label: "Calories",
-                val: display.totalCalories,
-                goal: display.calorieGoal,
-                color: "#1D9E75",
-              },
-              {
-                label: "Active Min",
-                val: display.totalMinutes,
-                goal: display.minutesGoal,
-                color: "#EF9F27",
-              },
-            ].map(({ label, val, goal, color }) => (
-              <div className="progress-row" key={label}>
-                <span className="progress-label">{label}</span>
-
-                <div className="progress-bg">
-                  <div
-                    className="progress-fill"
-                    style={{
-                      width: pct(val, goal) + "%",
-                      background: color,
-                    }}
-                  />
-                </div>
-
-                <span className="progress-pct">{pct(val, goal)}%</span>
-              </div>
-            ))}
-          </div>
         </>
       )}
 

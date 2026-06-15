@@ -44,5 +44,9 @@ public class AuthDto {
         private String email;
         private String fullName;
         private Long userId;
+
+        private Integer age;
+        private Double weightKg;
+        private Double heightCm;
     }
 }

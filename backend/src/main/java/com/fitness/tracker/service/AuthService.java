@@ -45,13 +45,20 @@ public class AuthService {
         UserDetails userDetails = userDetailsService.loadUserByUsername(user.getUsername());
         String token = jwtUtil.generateToken(userDetails);
 
-        return new AuthDto.AuthResponse(token, user.getUsername(), user.getEmail(), user.getFullName(), user.getId());
+        return new AuthDto.AuthResponse(
+                token,
+                user.getUsername(),
+                user.getEmail(),
+                user.getFullName(),
+                user.getId(),
+                user.getAge(),
+                user.getWeightKg(),
+                user.getHeightCm());
     }
 
     public AuthDto.AuthResponse login(AuthDto.LoginRequest request) {
         authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
-        );
+                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
 
         User user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -59,6 +66,14 @@ public class AuthService {
         UserDetails userDetails = userDetailsService.loadUserByUsername(user.getUsername());
         String token = jwtUtil.generateToken(userDetails);
 
-        return new AuthDto.AuthResponse(token, user.getUsername(), user.getEmail(), user.getFullName(), user.getId());
+        return new AuthDto.AuthResponse(
+                token,
+                user.getUsername(),
+                user.getEmail(),
+                user.getFullName(),
+                user.getId(),
+                user.getAge(),
+                user.getWeightKg(),
+                user.getHeightCm());
     }
 }
